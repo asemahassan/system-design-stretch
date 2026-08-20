@@ -53,13 +53,30 @@ function renderCards(list) {
 }
 
 async function initJSONFile() {
-  // Wait for the array of artists to be returned
+  // Add the loading message in the card container
+  cardArea.textContent = "Loading artists data: Please wait...";
+
+  //Fetch the data right away in the background
   const artists = await loadArtists();
   console.log(artists);
   console.log(`Total artists: ${artists.length}`);
 
+  // Delay the visual rendering by 2 seconds
+  setTimeout(() => {
+    //Clear the loading message out of the container
+    cardArea.textContent = "";
+
+    //Render the actual cards onto the screen
+    renderCards(artists);
+  }, 2000);
+
+  /* original method from lesson 01
+  // Wait for the array of artists to be returned
+  const artists = await loadArtists();
+  console.log(artists);
+  console.log(`Total artists: ${artists.length}`);
   //passing this method the fetched array from json file
-  renderCards(artists);
+  renderCards(artists);*/
 }
 
 //load artists JSON and pass it to renderCards function()
@@ -68,6 +85,24 @@ initJSONFile();
 // Shuffle: pick a random artist and feature them.
 const shuffleButton = document.querySelector(".shuffle");
 
+/*
+//lesson-02 step 4: testing delays on button click freeze for 5 seconds
+shuffleButton.addEventListener("click", () => {
+  if (roster.length === 0) return;
+  console.log("Freezing browser thread for 5 seconds...");
+  const startTime = Date.now();
+  while (Date.now() - startTime < 5000) {
+    // Single-thread is blocked. UI cannot render any text changes here.
+  }
+  console.log("5 seconds over. Thread unfrozen.");
+
+  const pick = roster[Math.floor(Math.random() * roster.length)];
+  document.querySelector(".featured").textContent =
+    `Featured today: ${pick.name}`;
+});
+//Output: the UI didn't respond or loaded when the 5 seconds loop was running.
+*/
+//original button call event with no delays
 shuffleButton.addEventListener("click", () => {
   if (roster.length === 0) return;
   const pick = roster[Math.floor(Math.random() * roster.length)];
