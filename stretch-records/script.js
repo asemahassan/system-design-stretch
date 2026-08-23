@@ -4,19 +4,46 @@
 // of artist objects at the top of the file, and one repeatable rule that
 // renders it. In this course the data moves out of this file, step by step.
 
+//lesson-01 to lesson-04 changes in loadArtists()
 //Moved array to a artists.json file and loading it here using fetch()
-// Function to load and use the artist data
-// Function that returns the array of artists
+//Function to load and use the artist data
+//Function that returns the array of artists
 async function loadArtists() {
   try {
-    const response = await fetch("artists.json");
-    const data = await response.json();
+    //lesson-04 fetch with path but first ensure the json server is enabled in terminal on this directory
+    //Start both fetch() requests simultaneously
+    const [artistsResponse, labelResponse] = await Promise.all([
+      fetch("http://localhost:3000/artists"),
+      fetch("http://localhost:3001/label"),
+    ]);
 
-    // Return the array directly
-    return data.artists;
+    //"Log the Response object before parsing"
+    console.log("Raw Response Object:", artistsResponse);
+
+    //Check if both network requests succeeded
+    if (!artistsResponse.ok || !labelResponse.ok) {
+      if (!artistsResponse.ok) {
+        throw new Error("Request failed with status " + artistsResponse.status);
+      } else
+        throw new Error("Request failed with status " + labelResponse.status);
+    }
+    //Parse both responses into usable JSON objects simultaneously
+    const [artistsData, labelData] = await Promise.all([
+      artistsResponse.json(),
+      labelResponse.json(),
+    ]);
+
+    //Code only reaches this point when BOTH pieces of data have arrived
+    console.log("Artists data:", artistsData);
+    console.log("Label data:", labelData); //log to test label.json data has arrived
+
+    return artistsData;
   } catch (error) {
     console.error("Error loading JSON data:", error);
     return []; // Return empty array on failure to prevent app crashes
+  } finally {
+    //Cleanup code that must run regardless of success or failure
+    console.log("Loading Data from JSON Attempt Complete !!!");
   }
 }
 
@@ -59,13 +86,6 @@ class MissingDataError extends Error {
     this.name = "MissingDataError";
   }
 }
-
-//function to check if a particular artist exists otherwise throw error
-/*When added a dummy data in artists.json with no name
-Console: script.js:65 Uncaught MissingDataError: Required data is missing name
-    at checkArtist (script.js:65:27)
-    at renderCards (script.js:49:5)
-    at script.js:88:7 */
 function checkArtist(artist) {
   if (!artist.name) throw new MissingDataError("name");
 }
@@ -84,8 +104,8 @@ async function initArtistsLoading() {
     if (!artists || artists.length === 0) {
       throw new Error("Artist load failed for the home page. " + error.message);
     }
-    console.log(artists);
-    console.log(`Total artists: ${artists.length}`);
+    // console.log(artists);
+    // console.log(`Total artists: ${artists.length}`);
 
     //Delay the visual rendering by 2 seconds on success
     setTimeout(() => {
@@ -102,60 +122,12 @@ async function initArtistsLoading() {
   }
 }
 
-//lesson-03 function to load artists using then, catch and finally
-function loadArtistsWithDelayMessage() {
-  // Set up the initial UI state immediately
-  cardArea.textContent = "Loading artists data: Please wait...";
-
-  //Start the asynchronous data fetch using then, catch and finally
-  loadArtists()
-    .then((artists) => {
-      // Handles success: Triggers when the data successfully arrives
-      console.log(artists);
-      console.log(`Total artists: ${artists.length}`);
-
-      // Delay the visual rendering by 2 seconds
-      setTimeout(() => {
-        cardArea.textContent = "";
-        renderCards(artists);
-      }, 2000);
-    })
-    .catch((error) => {
-      // Handles failure: Triggers if the fetch or parsing breaks
-      console.error("Failed to initialize artist data:", error);
-      cardArea.textContent = "Error loading data. Please try again later.";
-    })
-    .finally(() => {
-      // Handles cleanup: Always runs regardless of success or failure
-      console.log("Initialization attempt completed.");
-    });
-}
-
-//loading artists using asynch and await lesson-01,02,03 all updates combined here.
+//loading artists using asynch and await lesson-01,02,03,04 all updates combined here.
 initArtistsLoading();
-
-//Lesson-03 independent function to load artists JSON and pass it to renderCards function()
-//loadArtistsWithDelayMessage(); //created for lesson-03
 
 // Shuffle: pick a random artist and feature them.
 const shuffleButton = document.querySelector(".shuffle");
-/*
-//lesson-02 step 4: testing delays on button click freeze for 5 seconds
-shuffleButton.addEventListener("click", () => {
-  if (roster.length === 0) return;
-  console.log("Freezing browser thread for 5 seconds...");
-  const startTime = Date.now();
-  while (Date.now() - startTime < 5000) {
-    // Single-thread is blocked. UI cannot render any text changes here.
-  }
-  console.log("5 seconds over. Thread unfrozen.");
 
-  const pick = roster[Math.floor(Math.random() * roster.length)];
-  document.querySelector(".featured").textContent =
-    `Featured today: ${pick.name}`;
-});
-//Output: the UI didn't respond or loaded when the 5 seconds loop was running.
-*/
 //original button call event with no delays
 shuffleButton.addEventListener("click", () => {
   if (roster.length === 0) return;
@@ -169,14 +141,27 @@ shuffleButton.addEventListener("click", () => {
 const form = document.querySelector(".signup");
 const nameInput = document.querySelector("#artist-name");
 const genreInput = document.querySelector("#artist-genre");
+const totalInput = document.querySelector("#artist-total");
+const photoInput = document.querySelector("#artist-photo");
 
-form.addEventListener("submit", (event) => {
+//lesson-04 add the form data to the json
+//added two more input data for form for consistency of the json artists data
+form.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const name = nameInput.value;
-  if (name) {
-    const genre = genreInput.value || "Unsigned";
-    renderCards([{ name: name, genre: genre, total: "0:00" }]);
-    nameInput.value = "";
-    genreInput.value = "";
-  }
+  const newArtist = {
+    name: nameInput.value,
+    genre: genreInput.value,
+    total: totalInput.value,
+    photo: photoInput.value,
+  };
+
+  const options = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(newArtist),
+  };
+  console.log(options);
+
+  const response = await fetch("http://localhost:3000/artists", options);
+  console.log(response.status);
 });
