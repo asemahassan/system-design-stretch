@@ -1,0 +1,61 @@
+{
+  "artists": [
+    {
+      "name": "Pinkfong",
+      "genre": "Children's music",
+      "total": "11:31",
+      "photo": "images/pinkfong.jpeg",
+      "id": "8b_XtZ0Pfhs"
+    },
+    {
+      "name": "Adriano Celentano",
+      "genre": "Italian pop",
+      "total": "20:52",
+      "photo": "images/adriano-celentano.jpg",
+      "id": "zIe6SqKghxg"
+    },
+    {
+      "name": "Asake",
+      "genre": "Afrobeats",
+      "total": "14:08",
+      "photo": "images/asake.jpg",
+      "id": "WHB__awRpXY"
+    },
+    {
+      "name": "Miyagi and Andy Panda",
+      "genre": "Hip-hop",
+      "total": "16:21",
+      "photo": "images/miyagi-and-andy-panda.jpg",
+      "id": "qRoB6DqqpbM"
+    },
+    {
+      "name": "Johnny Cash",
+      "genre": "Country",
+      "total": "15:40",
+      "photo": "images/johnny-cash.jpg",
+      "id": "_yAPrnfXGdc"
+    },
+    {
+      "name": "Henry Moodie",
+      "genre": "Britist Hop",
+      "total": "25:40",
+      "photo": "images/henry.jpeg",
+      "id": "De1L4RS2_Mo"
+    },
+    {
+      "name": "Olala",
+      "genre": "Children Music",
+      "total": "30",
+      "photo": "",
+      "id": "oiAOJb9b_3o"
+    },
+    {
+      "name": "Geez",
+      "genre": "Cold",
+      "total": "21",
+      "photo": "images/NewArtist.jpg",
+      "id": "lgpQnHy2C30"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}
