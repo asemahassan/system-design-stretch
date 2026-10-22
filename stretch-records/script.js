@@ -21,7 +21,6 @@ async function loadArtists() {
 }
 
 const cardArea = document.querySelector(".cards");
-
 // Every artist currently on the page, whatever the data's source. renderCards
 // maintains this list, so the shuffle button and the form keep working no
 // matter where the artists came from.
@@ -47,44 +46,99 @@ function buildCard(artist) {
 
 function renderCards(list) {
   for (const artist of list) {
+    checkArtist(artist); //check if a particular artist name exists
     roster.push(artist);
     cardArea.append(buildCard(artist));
   }
 }
 
-async function initJSONFile() {
-  // Add the loading message in the card container
-  cardArea.textContent = "Loading artists data: Please wait...";
-
-  //Fetch the data right away in the background
-  const artists = await loadArtists();
-  console.log(artists);
-  console.log(`Total artists: ${artists.length}`);
-
-  // Delay the visual rendering by 2 seconds
-  setTimeout(() => {
-    //Clear the loading message out of the container
-    cardArea.textContent = "";
-
-    //Render the actual cards onto the screen
-    renderCards(artists);
-  }, 2000);
-
-  /* original method from lesson 01
-  // Wait for the array of artists to be returned
-  const artists = await loadArtists();
-  console.log(artists);
-  console.log(`Total artists: ${artists.length}`);
-  //passing this method the fetched array from json file
-  renderCards(artists);*/
+//lesson-03 add a custom error class
+class MissingDataError extends Error {
+  constructor(field) {
+    super("Required data is missing " + field);
+    this.name = "MissingDataError";
+  }
 }
 
-//load artists JSON and pass it to renderCards function()
-initJSONFile();
+//function to check if a particular artist exists otherwise throw error
+/*When added a dummy data in artists.json with no name
+Console: script.js:65 Uncaught MissingDataError: Required data is missing name
+    at checkArtist (script.js:65:27)
+    at renderCards (script.js:49:5)
+    at script.js:88:7 */
+function checkArtist(artist) {
+  if (!artist.name) throw new MissingDataError("name");
+}
+
+//created and updated method from lesson-01, lesson-02 and lesson-03 adding try,catch and finally
+async function initArtistsLoading() {
+  // Add the loading message in the card container
+  cardArea.textContent = "Loading artists data: Please wait...";
+  console.log("Initialization started.");
+
+  try {
+    //Fetch the data in the background
+    const artists = await loadArtists();
+
+    // Force an error if the array comes back empty (simulating a failure)
+    if (!artists || artists.length === 0) {
+      throw new Error("Artist load failed for the home page. " + error.message);
+    }
+    console.log(artists);
+    console.log(`Total artists: ${artists.length}`);
+
+    //Delay the visual rendering by 2 seconds on success
+    setTimeout(() => {
+      cardArea.textContent = "";
+      renderCards(artists);
+    }, 2000);
+  } catch (error) {
+    //Handle any network, parsing, or manual errors here
+    console.error("Caught an error during initialization:", error);
+    cardArea.textContent = "Error loading data. Please try again later."; //added message on screen when data is not loading.
+  } finally {
+    //Cleanup code that must run regardless of success or failure
+    console.log("Initialization attempt completed.");
+  }
+}
+
+//lesson-03 function to load artists using then, catch and finally
+function loadArtistsWithDelayMessage() {
+  // Set up the initial UI state immediately
+  cardArea.textContent = "Loading artists data: Please wait...";
+
+  //Start the asynchronous data fetch using then, catch and finally
+  loadArtists()
+    .then((artists) => {
+      // Handles success: Triggers when the data successfully arrives
+      console.log(artists);
+      console.log(`Total artists: ${artists.length}`);
+
+      // Delay the visual rendering by 2 seconds
+      setTimeout(() => {
+        cardArea.textContent = "";
+        renderCards(artists);
+      }, 2000);
+    })
+    .catch((error) => {
+      // Handles failure: Triggers if the fetch or parsing breaks
+      console.error("Failed to initialize artist data:", error);
+      cardArea.textContent = "Error loading data. Please try again later.";
+    })
+    .finally(() => {
+      // Handles cleanup: Always runs regardless of success or failure
+      console.log("Initialization attempt completed.");
+    });
+}
+
+//loading artists using asynch and await lesson-01,02,03 all updates combined here.
+initArtistsLoading();
+
+//Lesson-03 independent function to load artists JSON and pass it to renderCards function()
+//loadArtistsWithDelayMessage(); //created for lesson-03
 
 // Shuffle: pick a random artist and feature them.
 const shuffleButton = document.querySelector(".shuffle");
-
 /*
 //lesson-02 step 4: testing delays on button click freeze for 5 seconds
 shuffleButton.addEventListener("click", () => {
